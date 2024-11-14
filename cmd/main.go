@@ -2,6 +2,8 @@ package main
 
 import (
 	"mushrooms-api/controller"
+	"mushrooms-api/db"
+	"mushrooms-api/repository"
 	"mushrooms-api/usecase"
 
 	"github.com/gin-gonic/gin"
@@ -9,8 +11,13 @@ import (
 
 func main() {
 	server := gin.Default()
+	dbConnection, err := db.ConnectDB()
+	if err != nil {
+		panic(err)
+	}
+	ProductRepository := repository.NewProductRepository(dbConnection)
 
-	ProductUsecase := usecase.NewProductUsecase()
+	ProductUsecase := usecase.NewProductUsecase(ProductRepository)
 
 	ProductController := controller.NewProductController(ProductUsecase)
 
