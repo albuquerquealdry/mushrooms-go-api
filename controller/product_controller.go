@@ -4,6 +4,7 @@ import (
 	"mushrooms-api/model"
 	"mushrooms-api/usecase"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,4 +44,37 @@ func (p *productController) CreateProduct(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, insertedProduct)
+}
+
+func (p *productController) GetProductById(ctx *gin.Context) {
+
+	id := ctx.Param("productId")
+	if id == "" {
+		response := model.Response{
+			Message: "O id nao deve ser nulo",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+	}
+
+	productId, err := strconv.Atoi(id)
+	if err != nil {
+		response := model.Response{
+			Message: "O Id nao pode ser um caractere especial, somente numeros",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+	}
+
+	product, err := p.productUsecase.GetProductById(productId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+	}
+
+	if product == nil {
+		response := model.Response{
+			Message: "Produto nao encontrado na base de dados",
+		}
+		ctx.JSON(http.StatusNotFound, response)
+	}
+
+	ctx.JSON(http.StatusOK, product)
 }
